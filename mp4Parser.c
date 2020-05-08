@@ -92,7 +92,6 @@ int main()
         unsigned int atSize = (atomSizeBuf[0]<<24) | (atomSizeBuf[1]<<16) | (atomSizeBuf[2]<<8) | atomSizeBuf[3];
         printf("atom Size Dec:(%d), Hex:(%x) \n",atSize, atSize);
         atomSize = atSize;
-        nextBoxLoc += atomSize;
         
         // Parsing Box Name
         fgets(atomNameBuf, 4 + 1, fp);
@@ -130,63 +129,78 @@ int main()
             case _MOOV_:        //Maybe make do while or while, moov size > searching size
                 printf("=====[moov box]=====\n");
                 //Parsing the Size of mvhd box
-                read4(&(moovAtom.mvhdAtom.size),fp);
-                printf("mvhd atom size(%x)\n", moovAtom.mvhdAtom.size);
-                
-                // Parsing mvhd box name
-                fgets(atomNameBuf, 4 + 1, fp);
-                printf("atom Name(%s)\n", atomNameBuf);
-                unsigned int attype = (atomNameBuf[0]<<24) | (atomNameBuf[1]<<16) | (atomNameBuf[2]<<8) | atomNameBuf[3];
-                if(attype == _MVHD_)
+                // read4(&(moovAtom.mvhdAtom.size),fp);
+                // printf("mvhd atom size(%x)\n", moovAtom.mvhdAtom.size);
+
+                int moovInnerLoc = 8;   //8: moov size 32bits(4bytes) and moov tag 32bit(4bytes)
+                while(moovInnerLoc < atomSize)
                 {
-                    printf("    =====[mvhd box]=====\n");
-                    // Parsing mvhd version info
-                    unsigned char mvhdAtomVersionTemp[2];
-                    fgets(mvhdAtomVersionTemp, 2 + 1, fp);
-                    moovAtom.mvhdAtom.version = (mvhdAtomVersionTemp[0]<<8) | mvhdAtomVersionTemp[1];
-                    // printf("mvhd version info(%x)\n", moovAtom.mvhdAtom.version);
+                    // Parsing the box size
+                    unsigned int mooovInnerBoxSize = 0;
+                    read4(&(mooovInnerBoxSize), fp);
+                    moovInnerLoc += mooovInnerBoxSize;
+                    printf("moovInnerBoxSize:(%x)\n", mooovInnerBoxSize);
 
-                    // Skip the mvhd flag info
-                    fseek(fp, 2, SEEK_CUR);
-
-                    //Create, Modification time, timescale, duration is 32bits
-                    fseek(fp, 4 + 4, SEEK_CUR);     //Skip the creation & modification time, if you want to parse time you should separate depends on version type
-                    unsigned char tempBuf[4];
-
-                    // Parsing mvhd timescale info
-                    fgets(tempBuf, 4 + 1, fp);
-                    moovAtom.mvhdAtom.timeScale = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
-                    printf("    timeScale(%x)\n", moovAtom.mvhdAtom.timeScale);
-
-                    // Parsing mvhd duration info
-                    fgets(tempBuf, 4 + 1, fp);
-                    if(moovAtom.mvhdAtom.version == 0)
+                    // Parsing mvhd box name
+                    fgets(atomNameBuf, 4 + 1, fp);
+                    printf("atom Name(%s)\n", atomNameBuf);
+                    unsigned int attype = (atomNameBuf[0]<<24) | (atomNameBuf[1]<<16) | (atomNameBuf[2]<<8) | atomNameBuf[3];
+                    switch(attype)
                     {
-                        moovAtom.mvhdAtom.duration.val32 = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
-                        printf("    duration(%x)\n", moovAtom.mvhdAtom.duration.val32);
-                    }
-                    else if(moovAtom.mvhdAtom.version == 1)
-                    {
-                        moovAtom.mvhdAtom.duration.val64 = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
-                        printf("    duration(%x)\n", moovAtom.mvhdAtom.duration.val64);
-                    }
-                    
-                    //Calculate the media total duration time(seconds)
-                    mediaTotalDurationSeconds = (double)moovAtom.mvhdAtom.duration.val32 / (double)moovAtom.mvhdAtom.timeScale;
-                    printf("    MediaTotal Duration(%f)\n", mediaTotalDurationSeconds);
+                        case _MVHD_:
+                            printf("    =====[mvhd box]=====\n");
+                            // Parsing mvhd version info
+                            unsigned char mvhdAtomVersionTemp[2];
+                            fgets(mvhdAtomVersionTemp, 2 + 1, fp);
+                            moovAtom.mvhdAtom.version = (mvhdAtomVersionTemp[0]<<8) | mvhdAtomVersionTemp[1];
+                            // printf("mvhd version info(%x)\n", moovAtom.mvhdAtom.version);
 
-                    fseek(fp, 76, SEEK_CUR);    //Skip the all Reserved value
-                    
-                    // Parsing Next Track ID Info
-                    fgets(tempBuf, 4 + 1, fp);
-                    moovAtom.mvhdAtom.next_track_id = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
-                    printf("    next Track ID Dec:(%d), Hex:(%x)\n", moovAtom.mvhdAtom.next_track_id, moovAtom.mvhdAtom.next_track_id);
-                    
-                    printf("    ====================\n");
-                }
-                else if(attype = _TRAK_)
-                {
-                    
+                            // Skip the mvhd flag info
+                            fseek(fp, 2, SEEK_CUR);
+
+                            //Create, Modification time, timescale, duration is 32bits
+                            fseek(fp, 4 + 4, SEEK_CUR);     //Skip the creation & modification time, if you want to parse time you should separate depends on version type
+                            unsigned char tempBuf[4];
+
+                            // Parsing mvhd timescale info
+                            fgets(tempBuf, 4 + 1, fp);
+                            moovAtom.mvhdAtom.timeScale = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
+                            printf("    timeScale(%x)\n", moovAtom.mvhdAtom.timeScale);
+
+                            // Parsing mvhd duration info
+                            fgets(tempBuf, 4 + 1, fp);
+                            if(moovAtom.mvhdAtom.version == 0)
+                            {
+                                moovAtom.mvhdAtom.duration.val32 = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
+                                printf("    duration(%x)\n", moovAtom.mvhdAtom.duration.val32);
+                            }
+                            else if(moovAtom.mvhdAtom.version == 1)
+                            {
+                                moovAtom.mvhdAtom.duration.val64 = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
+                                printf("    duration(%x)\n", moovAtom.mvhdAtom.duration.val64);
+                            }
+                            
+                            //Calculate the media total duration time(seconds)
+                            mediaTotalDurationSeconds = (double)moovAtom.mvhdAtom.duration.val32 / (double)moovAtom.mvhdAtom.timeScale;
+                            printf("    MediaTotal Duration(%f)\n", mediaTotalDurationSeconds);
+
+                            fseek(fp, 76, SEEK_CUR);    //Skip the all Reserved value
+                            
+                            // Parsing Next Track ID Info
+                            fgets(tempBuf, 4 + 1, fp);
+                            moovAtom.mvhdAtom.next_track_id = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
+                            printf("    next Track ID Dec:(%d), Hex:(%x)\n", moovAtom.mvhdAtom.next_track_id, moovAtom.mvhdAtom.next_track_id);
+                            
+                            printf("    ====================\n");
+                        break;
+
+                        case _TRAK_:
+                            printf("    =====[trak box]=====\n");
+
+                            printf("    ====================\n");
+                        break;
+                    }
+                    fseek(fp, nextBoxLoc + moovInnerLoc, SEEK_SET);
                 }
 
                 printf("====================\n");
@@ -198,6 +212,7 @@ int main()
         }
 
         // Move to Next box
+        nextBoxLoc += atomSize;
         fseek(fp, nextBoxLoc, SEEK_SET);
         printf("nextBoxLoc(%d)\n", nextBoxLoc);
     }
