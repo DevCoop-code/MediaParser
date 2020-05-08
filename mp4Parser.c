@@ -44,10 +44,71 @@ typedef struct
     unsigned int next_track_id;         //indicates a value to use for the track ID of the next track to be added to this presentation.(ISO/IEC 14496-12)
 }mvhdBox;
 
+// Track Header, overall information about the track
+/*
+Exactly one track header box is contained in a track
+*/
+typedef struct
+{
+    unsigned int size;
+    unsigned char version;
+    union
+    {
+        unsigned int val32;
+        unsigned long long val64;
+    }create_time;
+    union 
+    {
+        unsigned int val32;
+        unsigned long long val64;
+    }modification_time;
+    unsigned int track_id;
+    unsigned int duration;      //Track's play second(based on movie timescale)
+    unsigned short alternate_group;
+    unsigned short volume;
+    unsigned int width;
+    unsigned int height;
+}tkhdBox;
+
+// media header, overall information about tthe media
+typedef struct
+{
+    unsigned int size;
+    unsigned char version;
+    union
+    {
+        unsigned int val32;
+        unsigned long long val64;
+    }create_time;
+    union 
+    {
+        unsigned int val32;
+        unsigned long long val64;
+    }modification_time;
+    unsigned int timeScale;
+    union
+    {
+        unsigned int val32;
+        unsigned long long val64;
+    }duration;
+}mdhdBox;
+
+// Container for the media infoormation in a track
+typedef struct
+{
+    mdhdBox mdhdAtom;
+}mdiaBox;
+
+typedef struct
+{
+    tkhdBox tkhdAtom;
+}trakBox;
+
 // Container for all the metadata
 typedef struct
 {
     mvhdBox mvhdAtom;
+    trakBox trakAtom;
 }moovBox;
 
 
