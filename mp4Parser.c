@@ -149,37 +149,39 @@ int main()
                     // Skip the mvhd flag info
                     fseek(fp, 2, SEEK_CUR);
 
-                    if(moovAtom.mvhdAtom.version  == 0)
+                    //Create, Modification time, timescale, duration is 32bits
+                    fseek(fp, 4 + 4, SEEK_CUR);     //Skip the creation & modification time, if you want to parse time you should separate depends on version type
+                    unsigned char tempBuf[4];
+
+                    // Parsing mvhd timescale info
+                    fgets(tempBuf, 4 + 1, fp);
+                    moovAtom.mvhdAtom.timeScale = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
+                    printf("    timeScale(%x)\n", moovAtom.mvhdAtom.timeScale);
+
+                    // Parsing mvhd duration info
+                    fgets(tempBuf, 4 + 1, fp);
+                    if(moovAtom.mvhdAtom.version == 0)
                     {
-                        //Create, Modification time, timescale, duration is 32bits
-                        fseek(fp, 4 + 4, SEEK_CUR);     //Skip the creation & modification time
-                        unsigned char tempBuf[4];
-
-                        // Parsing mvhd timescale info
-                        fgets(tempBuf, 4 + 1, fp);
-                        moovAtom.mvhdAtom.timeScale = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
-                        printf("    timeScale(%x)\n", moovAtom.mvhdAtom.timeScale);
-
-                        // Parsing mvhd duration info
-                        fgets(tempBuf, 4 + 1, fp);
                         moovAtom.mvhdAtom.duration.val32 = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
                         printf("    duration(%x)\n", moovAtom.mvhdAtom.duration.val32);
-                        
-                        //Calculate the media total duration time(seconds)
-                        mediaTotalDurationSeconds = (double)moovAtom.mvhdAtom.duration.val32 / (double)moovAtom.mvhdAtom.timeScale;
-                        printf("    MediaTotal Duration(%f)\n", mediaTotalDurationSeconds);
-
-                        fseek(fp, 76, SEEK_CUR);    //Skip the all Reserved value
-                        
-                        // Parsing Next Track ID Info
-                        fgets(tempBuf, 4 + 1, fp);
-                        moovAtom.mvhdAtom.next_track_id = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
-                        printf("    next Track ID Dec:(%d), Hex:(%x)\n", moovAtom.mvhdAtom.next_track_id, moovAtom.mvhdAtom.next_track_id);
                     }
-                    else if(moovAtom.mvhdAtom.version  == 1)
+                    else if(moovAtom.mvhdAtom.version == 1)
                     {
-                        //Create, Modification time, duration is 64bits but timescale is 32bits
+                        moovAtom.mvhdAtom.duration.val64 = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
+                        printf("    duration(%x)\n", moovAtom.mvhdAtom.duration.val64);
                     }
+                    
+                    //Calculate the media total duration time(seconds)
+                    mediaTotalDurationSeconds = (double)moovAtom.mvhdAtom.duration.val32 / (double)moovAtom.mvhdAtom.timeScale;
+                    printf("    MediaTotal Duration(%f)\n", mediaTotalDurationSeconds);
+
+                    fseek(fp, 76, SEEK_CUR);    //Skip the all Reserved value
+                    
+                    // Parsing Next Track ID Info
+                    fgets(tempBuf, 4 + 1, fp);
+                    moovAtom.mvhdAtom.next_track_id = (tempBuf[0]<<24) | (tempBuf[1]<<16) | (tempBuf[2]<<8) | (tempBuf[3]);
+                    printf("    next Track ID Dec:(%d), Hex:(%x)\n", moovAtom.mvhdAtom.next_track_id, moovAtom.mvhdAtom.next_track_id);
+                    
                     printf("    ====================\n");
                 }
                 else if(attype = _TRAK_)
