@@ -654,7 +654,7 @@ int main()
 
                                                                 fgets(tempBuf32, 4 + 1, fp);
                                                                 unsigned int entryCount = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
-                                                                while(entryCount < 0)
+                                                                while(entryCount > 0)
                                                                 {
                                                                     entryCount--;
 
@@ -670,6 +670,7 @@ int main()
                                                                     {
                                                                     case _MP4V_:
                                                                         fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        
                                                                         break;
 
                                                                     case _MP4A_:
@@ -677,11 +678,48 @@ int main()
                                                                         break;
 
                                                                     case _AVC1_:
+                                                                        printf("                        =====[avc1 box]=====\n");
+
                                                                         fseek(fp, 6, SEEK_CUR);     //Skip reserved
 
-                                                                        fgets(tempBuf16, 2, SEEK_CUR);
-                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.data_reference_index = tempBuf16[1] << 16 | tempBuf16[0];
+                                                                        // Parsing data reference index
+                                                                        fgets(tempBuf16, 2 + 1, fp);
 
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.data_reference_index = (tempBuf16[1] << 8) | tempBuf16[0];
+
+                                                                        fseek(fp, 16, SEEK_CUR);    //Skip reserved
+
+                                                                        // Parsing width & height
+                                                                        fgets(tempBuf16, 2 + 1, fp);
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.width = (tempBuf16[1] << 8) | tempBuf16[0];
+                                                                        fgets(tempBuf16, 2 + 1, fp);
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.height = (tempBuf16[1] << 8) | tempBuf16[0];
+
+                                                                        // Parsing horize/vertical resolution
+                                                                        fgets(tempBuf32, 4 + 1, fp);
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.horizResolution = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                        fgets(tempBuf32, 4 + 1, fp);
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.vertiResolution = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                                        fseek(fp, 42, SEEK_CUR);    //skip reserved, frame_count, compressorname, depth, pre_defined
+
+                                                                        // Parsing avc1 children box size
+                                                                        fgets(tempBuf32, 4 + 1, fp);
+                                                                        unsigned int avc1InnerSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                                        // Parsing avc1 children box tag
+                                                                        fgets(tempBuf32, 4 + 1, fp);
+                                                                        unsigned int attype = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                                        if(attype == _AVCC_)
+                                                                        {
+                                                                            printf("                            =====[avcc box]=====\n");
+                                                                            fseek(fp, avc1InnerSize, SEEK_CUR);
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            fseek(fp, avc1InnerSize, SEEK_CUR);
+                                                                        }
                                                                         break;
                                                                     
                                                                     default:
