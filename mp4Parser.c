@@ -98,7 +98,7 @@ typedef struct
     }modification_time;
     unsigned int track_id;
     unsigned int duration;      //Track's play second(based on movie timescale)
-    unsigned short alternate_group;
+    unsigned short alternate_group;     //16bit
     unsigned short volume;
     unsigned int width;
     unsigned int height;
@@ -149,6 +149,45 @@ typedef struct
 {
     drefBox drefAtom;
 }dinfBox;
+
+typedef struct
+{
+    unsigned short data_reference_index;
+    unsigned short width;
+    unsigned short height;
+}stsd_mp4v_SampleEntry;
+
+typedef struct
+{
+    unsigned short data_reference_index;
+    unsigned short timeScale;
+}stsd_mp4a_SampleEntry;
+
+typedef struct
+{
+    unsigned short data_reference_index;
+    unsigned short width;           // Maximum width, in pixels of the stream
+    unsigned short height;          // Maximum height, in pixels of the stream
+    unsigned int horizResolution;   // 0x00480000 <- 72dpi
+    unsigned int vertiResolution;   // 0x00480000 <- 72dpi
+}stsd_avc1_SampleEntry;
+
+typedef struct
+{
+    unsigned int naluFieldLength;
+
+    unsigned int spsNalUnitLength;
+    unsigned int ppsNalUnitLength;
+    
+    unsigned char* spsNalUnit;
+    unsigned char* ppsNalUnit;
+}stsd_avcc_SampleEntry;
+
+typedef struct
+{
+
+}stsd_esds_SampleEntry;
+
 // sample table box, container for the time/space map
 typedef struct
 {
@@ -189,45 +228,6 @@ typedef struct
     mvhdBox mvhdAtom;
     trakBox* trakAtom;
 }moovBox;
-
-
-typedef struct
-{
-    unsigned short data_reference_index;
-    unsigned short width;
-    unsigned short height;
-}stsd_mp4v_SampleEntry;
-
-typedef struct
-{
-    unsigned short data_reference_index;
-    unsigned short timeScale;
-}stsd_mp4a_SampleEntry;
-
-typedef struct
-{
-    unsigned short data_reference_index;
-    unsigned short width;           // Maximum width, in pixels of the stream
-    unsigned short height;          // Maximum height, in pixels of the stream
-    unsigned int horizResolution;   // 0x00480000 <- 72dpi
-    unsigned int vertiResolution;   // 0x00480000 <- 72dpi
-}stsd_avc1_SampleEntry;
-
-typedef struct
-{
-    unsigned int naluFieldLength;
-
-    unsigned int spsNalUnitLength;
-    unsigned int ppsNalUnitLength;
-    
-    unsigned char* spsNalUnit;
-    unsigned char* ppsNalUnit;
-}stsd_avcc_SampleEntry;
-
-typedef struct
-{
-
-}stsd_esds_SampleEntry;
 
 void read4(void* buffer, FILE* fp);
 void swap(unsigned char* left, unsigned char* right);
@@ -677,7 +677,10 @@ int main()
                                                                         break;
 
                                                                     case _AVC1_:
-                                                                        fseek(fp, 6, SEEK_CUR);
+                                                                        fseek(fp, 6, SEEK_CUR);     //Skip reserved
+
+                                                                        fgets(tempBuf16, 2, SEEK_CUR);
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.data_reference_index = tempBuf16[1] << 16 | tempBuf16[0];
 
                                                                         break;
                                                                     
