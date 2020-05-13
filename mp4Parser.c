@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS     //Prevent Compile Error occured from fopen secure warning
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define OS32 sizeof(void *) != 4 ? 0 : 1
 #define OS64 sizeof(void *) != 8 ? 0 : 1
@@ -12,6 +13,39 @@
 #define	_MOOV_	0x6D6F6F76
 #define		_MVHD_	0x6D766864
 #define		_TRAK_	0x7472616B
+#define			_TKHD_	0x746B6864
+#define			_TREF_	0x74726566
+#define			_EDTS_	0x65647473
+#define			_MDIA_	0x6D646961
+#define				_MDHD_	0x6D646864
+#define				_HDLR_	0x68646C72
+#define				_MINF_	0x6D696E66
+#define					_VMHD_	0x766D6864
+#define					_SMHD_	0x736D6864
+#define					_DINF_	0x64696E66
+#define						_DREF_	0x64726566
+#define						    _URL_	0x75726C20
+#define					_STBL_	0x7374626C
+#define						_STSD_	0x73747364
+#define							_pasp_	0x70617370		// Pixel Aspect Ratio Box
+#define							_MP4V_	0x6D703476
+#define							_MP4A_	0x6D703461
+#define							_AVC1_	0x61766331
+#define								_AVCC_	0x61766343
+#define								_BTRT_	0x62747274
+#define						_STTS_	0x73747473
+#define						_CTTS_	0x63747473
+#define						_STSC_	0x73747363
+#define						_STSZ_	0x7374737A
+#define						_STCO_	0x7374636F
+#define						_CO64_	0x636F3634
+#define						_STSS_	0x73747373
+// #define						_STSH_	0x73747368
+// #define						_STDP_	0x73746470
+// #define						_SDTP_	0x73647470
+#define						_SBGP_	0x73626770
+#define						_SGPD_	0x73677064
+#define						_SUBS_	0x73756273
 
 typedef struct
 {
@@ -51,7 +85,7 @@ Exactly one track header box is contained in a track
 typedef struct
 {
     unsigned int size;
-    unsigned char version;
+    unsigned char version;              // 8bits
     union
     {
         unsigned int val32;
@@ -93,24 +127,107 @@ typedef struct
     }duration;
 }mdhdBox;
 
+typedef struct 
+{
+    unsigned int handler_type;
+    unsigned char* name;
+}hdlrBox;
+
+typedef struct
+{
+    unsigned char* name;
+}urlBox;
+
+typedef struct
+{
+    unsigned int entry_count;
+
+    urlBox urlAtom;
+}drefBox;
+// data information box, container
+typedef struct
+{
+    drefBox drefAtom;
+}dinfBox;
+// sample table box, container for the time/space map
+typedef struct
+{
+    stsd_avc1_SampleEntry avc1SampleEntry;
+    stsd_avcc_SampleEntry avccSampleEntry;
+    stsd_esds_SampleEntry esdsSampleEntry;
+    stsd_mp4a_SampleEntry mp4aSampleEntry;
+    stsd_mp4v_SampleEntry mp4vSampleEntry;
+}stblBox;
+
+// Media Information Container
+typedef struct
+{
+    dinfBox dinfAtom;
+    stblBox stblAtom;
+}minfBox;
+
+
 // Container for the media infoormation in a track
 typedef struct
 {
     mdhdBox mdhdAtom;
+    hdlrBox hdlrAtom;
+    minfBox minfAtom;
 }mdiaBox;
 
 typedef struct
 {
     tkhdBox tkhdAtom;
+    mdiaBox mdiaAtom;
 }trakBox;
 
 // Container for all the metadata
 typedef struct
 {
+    int trakIndex;
+
     mvhdBox mvhdAtom;
-    trakBox trakAtom;
+    trakBox* trakAtom;
 }moovBox;
 
+
+typedef struct
+{
+    unsigned short data_reference_index;
+    unsigned short width;
+    unsigned short height;
+}stsd_mp4v_SampleEntry;
+
+typedef struct
+{
+    unsigned short data_reference_index;
+    unsigned short timeScale;
+}stsd_mp4a_SampleEntry;
+
+typedef struct
+{
+    unsigned short data_reference_index;
+    unsigned short width;           // Maximum width, in pixels of the stream
+    unsigned short height;          // Maximum height, in pixels of the stream
+    unsigned int horizResolution;   // 0x00480000 <- 72dpi
+    unsigned int vertiResolution;   // 0x00480000 <- 72dpi
+}stsd_avc1_SampleEntry;
+
+typedef struct
+{
+    unsigned int naluFieldLength;
+
+    unsigned int spsNalUnitLength;
+    unsigned int ppsNalUnitLength;
+    
+    unsigned char* spsNalUnit;
+    unsigned char* ppsNalUnit;
+}stsd_avcc_SampleEntry;
+
+typedef struct
+{
+
+}stsd_esds_SampleEntry;
 
 void read4(void* buffer, FILE* fp);
 void swap(unsigned char* left, unsigned char* right);
@@ -135,6 +252,9 @@ int main()
 
     ftypBox ftypAtom;
     moovBox moovAtom;
+
+    //Initialize moovBox Property
+    moovAtom.trakIndex = 0;
 
     FILE *fp = fopen("IU_friday.mp4", "r");
 
@@ -202,7 +322,7 @@ int main()
                     moovInnerLoc += mooovInnerBoxSize;
                     printf("moovInnerBoxSize:(%x)\n", mooovInnerBoxSize);
 
-                    // Parsing mvhd box name
+                    // Parsing box name
                     fgets(atomNameBuf, 4 + 1, fp);
                     printf("atom Name(%s)\n", atomNameBuf);
                     unsigned int attype = (atomNameBuf[0]<<24) | (atomNameBuf[1]<<16) | (atomNameBuf[2]<<8) | atomNameBuf[3];
@@ -258,10 +378,400 @@ int main()
                         case _TRAK_:
                             printf("    =====[trak box]=====\n");
 
+                            int trakLoc = 8;   //8: trak size 32bits(4bytes) and trak tag 32bit(4bytes) 
+
+                            int trackNum = moovAtom.trakIndex;
+                            while(trakLoc < mooovInnerBoxSize)
+                            {
+                                // Parsing the box size
+                                unsigned int trakInnerBoxSize = 0;
+                                read4(&(trakInnerBoxSize), fp);
+                                trakLoc += trakInnerBoxSize;
+
+                                // Parsing the box name
+                                fgets(atomNameBuf, 4 + 1, fp);
+                                printf("        atom Name(%s)\n", atomNameBuf);
+                                unsigned int attype = (atomNameBuf[0]<<24) | (atomNameBuf[1]<<16) | (atomNameBuf[2]<<8) | atomNameBuf[3];
+                                
+                                unsigned char tempBuf16[2];
+                                unsigned char tempBuf32[4];
+                                unsigned char tempBuf64[8];
+                                switch(attype)
+                                {
+                                    case _TKHD_:
+                                        printf("        =====[tkhd box]=====\n");
+                                        // fseek(fp, trakInnerBoxSize - 8, SEEK_CUR);  //8 means box size and tag size
+                                        unsigned char version[1];
+                                        fgets(version,  1 + 1, fp);
+                                        moovAtom.trakAtom[trackNum].tkhdAtom.version = version[0];
+                                        
+                                        fseek(fp, 3, SEEK_CUR); //Skip the Flags
+                                        switch(moovAtom.trakAtom[trackNum].tkhdAtom.version)
+                                        {
+                                            case 0:
+                                                fgets(tempBuf32, 4 + 1, fp);
+                                                moovAtom.trakAtom[trackNum].tkhdAtom.create_time.val32 = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                fgets(tempBuf32, 4 + 1, fp);
+                                                moovAtom.trakAtom[trackNum].tkhdAtom.modification_time.val32 = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                            break;
+                                            
+                                            case 1:
+                                                fseek(fp, 16, SEEK_CUR);    //Skip the creation, modification time lately it should be filled out
+                                            break;
+
+                                            default:
+
+                                            break;
+                                        }
+                                        fgets(tempBuf32, 4 + 1, fp);
+                                        moovAtom.trakAtom[trackNum].tkhdAtom.track_id = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                        
+                                        fseek(fp, 4, SEEK_CUR);     //Skip the Reserved 4bytes
+                                        
+                                        fgets(tempBuf32, 4 + 1, fp);
+                                        moovAtom.trakAtom[trackNum].tkhdAtom.duration = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);     //Can calculate media Duration : mediaTotalDurationSeconds = (double)moovAtom.trakAtom.tkhdAtom.duration / (double)moovAtom.mvhdAtom.timeScale;
+
+                                        fseek(fp, 12, SEEK_CUR);    //Skip the Reserved, layer, alternate_group property
+                                        
+                                        //Parsing the volume property - 2bytes
+                                        fgets(tempBuf16, 2 + 1, fp);
+                                        moovAtom.trakAtom[trackNum].tkhdAtom.volume = (tempBuf16[0] << 8) | (tempBuf16[1] << 8);
+
+                                        fseek(fp, 2, SEEK_CUR);     //Skip the Reserved
+
+                                        fseek(fp, 36, SEEK_CUR);    //Skip the Reserved
+
+                                        //Parsing Width(Available in video track)
+                                        fgets(tempBuf32, 4 + 1, fp);
+                                        moovAtom.trakAtom[trackNum].tkhdAtom.width = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                        //Parsing Height(Available in video track)
+                                        fgets(tempBuf32, 4 + 1, fp);
+                                        moovAtom.trakAtom[trackNum].tkhdAtom.height = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                    break;
+                                    case _TREF_:
+                                        printf("        =====[tref box]=====\n");
+                                        fseek(fp, trakInnerBoxSize - 8, SEEK_CUR);  //8 means box size and tag size
+                                    break;
+
+                                    case _EDTS_:
+                                        printf("        =====[edts box]=====\n");
+                                        fseek(fp, trakInnerBoxSize - 8, SEEK_CUR);  //8 means box size and tag size
+                                    break;
+
+                                    case _MDIA_:
+                                        printf("        =====[mdia box]=====\n");
+                                        // fseek(fp, trakInnerBoxSize - 8, SEEK_CUR);  //8 means box size and tag size
+
+                                        int mdiaLoc = 8;    //MDIA box size and Tag
+                                        while(mdiaLoc < trakInnerBoxSize)
+                                        {
+                                            //Parsing the box size
+                                            fgets(tempBuf32, 4 + 1, fp);
+                                            unsigned int mdiaInnerBoxSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                            mdiaLoc += mdiaInnerBoxSize;
+
+                                            //Parsing the box tag
+                                            fgets(tempBuf32, 4 + 1, fp);
+                                            unsigned int attype = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                            switch (attype)
+                                            {
+                                            case _MDHD_:
+                                                printf("            =====[mdhd box]=====\n");
+                                                // fseek(fp, mdiaInnerBoxSize - 8, SEEK_CUR);
+                                                unsigned char version[1];
+                                                fgets(version, 1 + 1, fp);
+                                                moovAtom.trakAtom[trackNum].mdiaAtom.mdhdAtom.version = version[0];
+
+                                                fseek(fp, 3, SEEK_CUR);     //Skip flags
+
+                                                switch (moovAtom.trakAtom[trackNum].mdiaAtom.mdhdAtom.version)
+                                                {
+                                                case 0:
+                                                    //Parsing creation time
+                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                    moovAtom.trakAtom[trackNum].mdiaAtom.mdhdAtom.create_time.val32 = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                    //Parsing modification time
+                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                    moovAtom.trakAtom[trackNum].mdiaAtom.mdhdAtom.modification_time.val32 = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                    break;
+                                                case 1:
+                                                    //Parsing creation time
+                                                    fseek(fp, 16, SEEK_CUR);    //Lately need to implement this
+                                                    break;
+                                                default:
+
+                                                    break;
+                                                }
+
+                                                fgets(tempBuf32, 4 + 1, fp);
+                                                moovAtom.trakAtom[trackNum].mdiaAtom.mdhdAtom.timeScale = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                if(moovAtom.trakAtom[trackNum].mdiaAtom.mdhdAtom.version == 0)
+                                                {
+                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                    moovAtom.trakAtom[trackNum].mdiaAtom.mdhdAtom.duration.val32 = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                }
+                                                else
+                                                {
+                                                    fseek(fp, 8, SEEK_CUR);     //Lately need to implement this
+                                                }
+                                                
+                                                fseek(fp, 4, SEEK_CUR);     //Skip the pad, language, pre_defined
+                                                break;
+
+                                            case _HDLR_:
+                                                printf("            =====[hdlr box]=====\n");
+                                                // fseek(fp, mdiaInnerBoxSize - 8, SEEK_CUR);
+                                               
+                                                fseek(fp, 8, SEEK_CUR);     // Skip version, flags and reserved
+                                                
+                                                fgets(tempBuf32, 4 + 1, fp);
+                                                moovAtom.trakAtom[trackNum].mdiaAtom.hdlrAtom.handler_type = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                printf("            handler type:(%x)\n", moovAtom.trakAtom[trackNum].mdiaAtom.hdlrAtom.handler_type);
+
+                                                fseek(fp, 4 * 3, SEEK_CUR);     // Skip the reserved
+
+                                                printf("            hdlr box size(%d)\n", mdiaInnerBoxSize);
+                                                int nameSize = mdiaInnerBoxSize - (12 + 4 + 8 + 8);
+                                                printf("            hdlr track name size(%d)\n", sizeof(char *) * nameSize);
+                                                moovAtom.trakAtom[trackNum].mdiaAtom.hdlrAtom.name = (unsigned char*)malloc(sizeof(char *) * nameSize);
+                                                
+                                                fgets(moovAtom.trakAtom[trackNum].mdiaAtom.hdlrAtom.name, nameSize + 1, fp);
+                                                printf("            track name:(%s)\n", moovAtom.trakAtom[trackNum].mdiaAtom.hdlrAtom.name);
+                                                break;
+
+                                            case _MINF_:
+                                                printf("            =====[minf box]=====\n");
+
+                                                int minfLoc = 8;
+                                                while(minfLoc < mdiaInnerBoxSize)
+                                                {
+                                                    //Parsing the box size
+                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                    unsigned int minfInnerBoxSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                    minfLoc += minfInnerBoxSize;
+
+                                                    //Parsing the box tag
+                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                    unsigned int attype = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                    switch (attype)
+                                                    {
+                                                    case _VMHD_:
+                                                        printf("                =====[vmhd box]=====\n");
+                                                        fseek(fp, minfInnerBoxSize - 8, SEEK_CUR);
+                                                        break;
+                                                    case _SMHD_:
+                                                        printf("                =====[smhd box]=====\n");
+                                                        fseek(fp, minfInnerBoxSize - 8, SEEK_CUR);
+                                                        break;
+                                                    case _DINF_:
+                                                        printf("                =====[dinf box]=====\n");
+                                                        // fseek(fp, minfInnerBoxSize - 8, SEEK_CUR);
+                                                        int dinfLoc = 8;
+                                                        int entry_count = 0;
+                                                        while(dinfLoc < minfInnerBoxSize)
+                                                        {
+                                                            //Parsing the box size
+                                                            fgets(tempBuf32, 4 + 1, fp);
+                                                            unsigned int dinfInnerBoxSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                            dinfLoc += dinfInnerBoxSize;
+
+                                                            //Parsing the box tag
+                                                            fgets(tempBuf32, 4 + 1, fp);
+                                                            unsigned int attype = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                            if(attype == _DREF_)
+                                                            {
+                                                                printf("                    =====[dref box]=====\n");
+                                                                fseek(fp, 4, SEEK_CUR);     //Skip version, flag 
+
+                                                                fgets(tempBuf32, 4 + 1, fp);
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.dinfAtom.drefAtom.entry_count = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                entry_count = moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.dinfAtom.drefAtom.entry_count;
+                                                                
+                                                                if(entry_count > 0)
+                                                                {
+                                                                    entry_count--;
+
+                                                                    //Parsing box size
+                                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                                    unsigned int boxSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                                    //Parsing box tag
+                                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                                    unsigned int attype = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                    if(attype == _URL_)
+                                                                    {
+                                                                        printf("                        =====[url box]=====\n");
+                                                                        fseek(fp, 4, SEEK_CUR);     //skip version, flag
+
+                                                                        int locationSize = boxSize - 4 - 8;
+                                                                        printf("                        URL location Size(%d)\n", locationSize);
+                                                                        char* location = (char *)malloc(sizeof(char*) * locationSize);
+                                                                        if(locationSize != 0)
+                                                                        {
+                                                                            fgets(location, locationSize + 1, fp);
+                                                                        }
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.dinfAtom.drefAtom.urlAtom.name = location;
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        fseek(fp, boxSize - 8, SEEK_CUR);
+                                                                    }
+                                                                }
+                                                            }else
+                                                            {
+                                                                printf("                    =====[[%x] box]=====\n", attype);
+                                                                fseek(fp, dinfInnerBoxSize - 8, SEEK_CUR);
+                                                            }
+                                                        }
+                                                        break;
+                                                    case _STBL_:
+                                                        printf("                =====[stbl box]=====\n");
+
+                                                        int stblLoc = 8;
+                                                        while(stblLoc < minfInnerBoxSize)
+                                                        {
+                                                            // Parsing the box size
+                                                            fgets(tempBuf32, 4 + 1, fp);
+                                                            unsigned int stblInnerBoxSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                            stblLoc += stblInnerBoxSize;
+
+                                                            // Parsing the box tag
+                                                            fgets(tempBuf32, 4 + 1, fp);
+                                                            unsigned int attype = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                            switch(attype)
+                                                            {
+                                                            case _STSD_:
+                                                                printf("                    =====[stsd box]=====\n");
+                                                                fseek(fp, 4, SEEK_CUR);     //Skip Version & Flag
+
+                                                                fgets(tempBuf32, 4 + 1, fp);
+                                                                unsigned int entryCount = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                while(entryCount < 0)
+                                                                {
+                                                                    entryCount--;
+
+                                                                    //Parsing the SampleEntry Size
+                                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                                    unsigned int sampleEntryBoxSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                                    //Parsing the box tag
+                                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                                    unsigned int attype = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                                    switch (attype)
+                                                                    {
+                                                                    case _MP4V_:
+                                                                        fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        break;
+
+                                                                    case _MP4A_:
+                                                                        fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        break;
+
+                                                                    case _AVC1_:
+                                                                        fseek(fp, 6, SEEK_CUR);
+
+                                                                        break;
+                                                                    
+                                                                    default:
+                                                                        fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        break;
+                                                                    }
+                                                                }
+
+
+                                                                // fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _STTS_:
+                                                                printf("                    =====[stts box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _CTTS_:
+                                                                printf("                    =====[ctts box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _STSC_:
+                                                                printf("                    =====[stsc box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _STSZ_:
+                                                                printf("                    =====[stsz box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _STCO_:
+                                                                printf("                    =====[stco box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _CO64_:
+                                                                printf("                    =====[co64 box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _STSS_:
+                                                                printf("                    =====[stss box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _SBGP_:
+                                                                printf("                    =====[sbgp box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _SGPD_:
+                                                                printf("                    =====[sgpd box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            case _SUBS_:
+                                                                printf("                    =====[subs box]=====\n");
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+
+                                                            default:
+                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                break;
+                                                            }
+                                                        }
+                                                        break;
+                                                    default:
+                                                        fseek(fp, minfInnerBoxSize - 8, SEEK_CUR);
+                                                        break;
+                                                    }
+                                                }
+                                                break;
+                                            
+                                            default:
+                                                fseek(fp, mdiaInnerBoxSize - 8, SEEK_CUR);
+                                                break;
+                                            }
+                                        }
+                                        
+                                    break;
+
+                                    default:
+                                        fseek(fp, trakInnerBoxSize - 8, SEEK_CUR);
+                                    break;       
+                                }
+                            }
+                            moovAtom.trakIndex++;
                             printf("    ====================\n");
                         break;
                     }
-                    fseek(fp, nextBoxLoc + moovInnerLoc, SEEK_SET);
+                    fseek(fp, nextBoxLoc + moovInnerLoc, SEEK_SET);     //moovInnerLoc = Size of 1st moovChildren (mvhd, trak, mvex, ipmc) 
                 }
 
                 printf("====================\n");
@@ -275,7 +785,7 @@ int main()
         // Move to Next box
         nextBoxLoc += atomSize;
         fseek(fp, nextBoxLoc, SEEK_SET);
-        printf("nextBoxLoc(%d)\n", nextBoxLoc);
+        // printf("nextBoxLoc(%d)\n", nextBoxLoc);
     }
     
     // Close the file
