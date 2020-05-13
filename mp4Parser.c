@@ -30,6 +30,7 @@
 #define							_pasp_	0x70617370		// Pixel Aspect Ratio Box
 #define							_MP4V_	0x6D703476
 #define							_MP4A_	0x6D703461
+#define                             _ESDS_  0x65736473
 #define							_AVC1_	0x61766331
 #define								_AVCC_	0x61766343
 #define								_BTRT_	0x62747274
@@ -674,7 +675,42 @@ int main()
                                                                         break;
 
                                                                     case _MP4A_:
-                                                                        fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        // fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        printf("                        =====[mp4a box]=====\n");
+
+                                                                        fseek(fp, 6, SEEK_CUR); //reserved
+
+                                                                        // Parsing data reference index
+                                                                        fgets(tempBuf16, 2 + 1, fp);
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.mp4aSampleEntry.data_reference_index = (tempBuf16[1] << 8) | tempBuf16[0];
+
+                                                                        fseek(fp, 16, SEEK_CUR);    //Skip reserved
+
+                                                                        // Parsing TimeScale
+                                                                        fgets(tempBuf16, 2 + 1, fp);
+                                                                        moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.mp4aSampleEntry.timeScale = (tempBuf16[1] << 8) | tempBuf16[0];
+
+                                                                        fseek(fp, 2, SEEK_CUR);     //Skip reserved
+
+                                                                        // Parsing esds box size
+                                                                        fgets(tempBuf32, 4 + 1, fp);
+                                                                        unsigned int esdsBoxSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+
+                                                                        // Parsing esds box tag
+                                                                        fgets(tempBuf32, 4 + 1, fp);
+                                                                        unsigned int esdsTag = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                        if(esdsTag == _ESDS_)
+                                                                        {
+                                                                            printf("                            =====[esds box]=====\n");
+                                                                            
+                                                                            fseek(fp, esdsBoxSize - 8, SEEK_CUR);
+
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            fseek(fp, esdsBoxSize - 8, SEEK_CUR);
+                                                                        }
+
                                                                         break;
 
                                                                     case _AVC1_:
@@ -684,7 +720,6 @@ int main()
 
                                                                         // Parsing data reference index
                                                                         fgets(tempBuf16, 2 + 1, fp);
-
                                                                         moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.avc1SampleEntry.data_reference_index = (tempBuf16[1] << 8) | tempBuf16[0];
 
                                                                         fseek(fp, 16, SEEK_CUR);    //Skip reserved
