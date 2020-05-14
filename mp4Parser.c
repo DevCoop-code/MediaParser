@@ -190,6 +190,21 @@ typedef struct
 }stsd_esds_SampleEntry;
 
 // sample table box, container for the time/space map
+/*
+Mdat is the media data atom which contain video & audio frames. It is separated into tracks
+Each track has multiple chunks and each chunks has multiple samples
+track
+    chunk #1
+        sample #1
+        sample #2
+    chunk #2
+The number of sample in the chunk is defined in stsc atom(sample to chunk box) and the chunk offset is defined in stco atom(chunk offset box)
+
+sample?
+    - All the data associated with a single timestamp
+    - No two samples within a track can share the same timestamp
+    - A sample is individual frame of video or a compressed section of audio. In hint tracks, a sample defines the formationo of one or more streaming packets
+*/
 typedef struct
 {
     stsd_avc1_SampleEntry avc1SampleEntry;
