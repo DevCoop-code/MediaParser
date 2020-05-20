@@ -70,7 +70,7 @@ typedef struct
         unsigned int val32;
         unsigned long long val64;
     }modification_time;
-    unsigned int timeScale;
+    unsigned int timeScale;             // Integer that specifies the time-scale for the entire presentation was modified
     union
     {
         unsigned int val32;
@@ -100,8 +100,9 @@ typedef struct
     unsigned int track_id;
     unsigned int duration;      //Track's play second(based on movie timescale)
     unsigned short alternate_group;     //16bit
-    unsigned short volume;
-    unsigned int width;
+    unsigned short volume;          // Full volume is 1.0(0x0100) and is the normal value
+    unsigned int matrix[9];         // Provides a transformation matrix for the video { 0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000 }
+    unsigned int width;             // Specify the track's visual presentation size
     unsigned int height;
 }tkhdBox;
 
@@ -128,10 +129,17 @@ typedef struct
     }duration;
 }mdhdBox;
 
+/*
+handler_type when present in a media box
+'vide': Video track
+'soun': Audio track
+'hint': Hint track
+'meta': Timed Metadata track
+*/
 typedef struct 
 {
     unsigned int handler_type;
-    unsigned char* name;
+    unsigned char* name;        //UTF-8 character which gives a human-readable name for the track type
 }hdlrBox;
 
 typedef struct
@@ -154,8 +162,8 @@ typedef struct
 typedef struct
 {
     unsigned short data_reference_index;
-    unsigned short width;
-    unsigned short height;
+    unsigned short width;               //Maximum width
+    unsigned short height;              //Maximum height
 }stsd_mp4v_SampleEntry;
 
 typedef struct
