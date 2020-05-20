@@ -1,0 +1,387 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		78B1619D2474002E00530DD2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B1619C2474002E00530DD2 /* AppDelegate.swift */; };
+		78B1619F2474002E00530DD2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B1619E2474002E00530DD2 /* SceneDelegate.swift */; };
+		78B161A12474002E00530DD2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B161A02474002E00530DD2 /* ViewController.swift */; };
+		78B161A42474002E00530DD2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 78B161A22474002E00530DD2 /* Main.storyboard */; };
+		78B161A62474003200530DD2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78B161A52474003200530DD2 /* Assets.xcassets */; };
+		78B161A92474003200530DD2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 78B161A72474003200530DD2 /* LaunchScreen.storyboard */; };
+		78B161B92474033F00530DD2 /* libmediaParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B161B82474033F00530DD2 /* libmediaParser.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		78B161992474002E00530DD2 /* MediaAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		78B1619C2474002E00530DD2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		78B1619E2474002E00530DD2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		78B161A02474002E00530DD2 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		78B161A32474002E00530DD2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		78B161A52474003200530DD2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		78B161A82474003200530DD2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		78B161AA2474003200530DD2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		78B161B82474033F00530DD2 /* libmediaParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmediaParser.a; sourceTree = "<group>"; };
+		78B161BA2474035000530DD2 /* mediaParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mediaParser.h; sourceTree = "<group>"; };
+		78B161BC247404C700530DD2 /* MediaAnalyzer-Briding-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MediaAnalyzer-Briding-Header.h"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		78B161962474002E00530DD2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B161B92474033F00530DD2 /* libmediaParser.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		78B161902474002E00530DD2 = {
+			isa = PBXGroup;
+			children = (
+				78B1619B2474002E00530DD2 /* MediaAnalyzer */,
+				78B1619A2474002E00530DD2 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		78B1619A2474002E00530DD2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				78B161992474002E00530DD2 /* MediaAnalyzer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		78B1619B2474002E00530DD2 /* MediaAnalyzer */ = {
+			isa = PBXGroup;
+			children = (
+				78B161B52474030F00530DD2 /* staticLibrary */,
+				78B1619C2474002E00530DD2 /* AppDelegate.swift */,
+				78B1619E2474002E00530DD2 /* SceneDelegate.swift */,
+				78B161A02474002E00530DD2 /* ViewController.swift */,
+				78B161A22474002E00530DD2 /* Main.storyboard */,
+				78B161A52474003200530DD2 /* Assets.xcassets */,
+				78B161A72474003200530DD2 /* LaunchScreen.storyboard */,
+				78B161AA2474003200530DD2 /* Info.plist */,
+				78B161BC247404C700530DD2 /* MediaAnalyzer-Briding-Header.h */,
+			);
+			path = MediaAnalyzer;
+			sourceTree = "<group>";
+		};
+		78B161B52474030F00530DD2 /* staticLibrary */ = {
+			isa = PBXGroup;
+			children = (
+				78B161B72474032D00530DD2 /* include */,
+				78B161B62474032800530DD2 /* lib */,
+			);
+			path = staticLibrary;
+			sourceTree = "<group>";
+		};
+		78B161B62474032800530DD2 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				78B161B82474033F00530DD2 /* libmediaParser.a */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+		78B161B72474032D00530DD2 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				78B161BA2474035000530DD2 /* mediaParser.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		78B161982474002E00530DD2 /* MediaAnalyzer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 78B161AD2474003200530DD2 /* Build configuration list for PBXNativeTarget "MediaAnalyzer" */;
+			buildPhases = (
+				78B161952474002E00530DD2 /* Sources */,
+				78B161962474002E00530DD2 /* Frameworks */,
+				78B161972474002E00530DD2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MediaAnalyzer;
+			productName = MediaAnalyzer;
+			productReference = 78B161992474002E00530DD2 /* MediaAnalyzer.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		78B161912474002E00530DD2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1130;
+				LastUpgradeCheck = 1130;
+				ORGANIZATIONNAME = HanGyoJeong;
+				TargetAttributes = {
+					78B161982474002E00530DD2 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
+				};
+			};
+			buildConfigurationList = 78B161942474002E00530DD2 /* Build configuration list for PBXProject "MediaAnalyzer" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 78B161902474002E00530DD2;
+			productRefGroup = 78B1619A2474002E00530DD2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				78B161982474002E00530DD2 /* MediaAnalyzer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		78B161972474002E00530DD2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B161A92474003200530DD2 /* LaunchScreen.storyboard in Resources */,
+				78B161A62474003200530DD2 /* Assets.xcassets in Resources */,
+				78B161A42474002E00530DD2 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		78B161952474002E00530DD2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B161A12474002E00530DD2 /* ViewController.swift in Sources */,
+				78B1619D2474002E00530DD2 /* AppDelegate.swift in Sources */,
+				78B1619F2474002E00530DD2 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		78B161A22474002E00530DD2 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				78B161A32474002E00530DD2 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		78B161A72474003200530DD2 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				78B161A82474003200530DD2 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		78B161AB2474003200530DD2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		78B161AC2474003200530DD2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		78B161AE2474003200530DD2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KYV3CSY2F3;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MediaAnalyzer/staticLibrary/include";
+				INFOPLIST_FILE = MediaAnalyzer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/MediaAnalyzer/staticLibrary/lib",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.hangyojeong.MediaAnalyzer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "MediaAnalyzer/MediaAnalyzer-Briding-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		78B161AF2474003200530DD2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KYV3CSY2F3;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MediaAnalyzer/staticLibrary/include";
+				INFOPLIST_FILE = MediaAnalyzer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/MediaAnalyzer/staticLibrary/lib",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.hangyojeong.MediaAnalyzer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "MediaAnalyzer/MediaAnalyzer-Briding-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		78B161942474002E00530DD2 /* Build configuration list for PBXProject "MediaAnalyzer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78B161AB2474003200530DD2 /* Debug */,
+				78B161AC2474003200530DD2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		78B161AD2474003200530DD2 /* Build configuration list for PBXNativeTarget "MediaAnalyzer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78B161AE2474003200530DD2 /* Debug */,
+				78B161AF2474003200530DD2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 78B161912474002E00530DD2 /* Project object */;
+}
