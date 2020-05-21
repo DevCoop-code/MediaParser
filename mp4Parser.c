@@ -197,6 +197,30 @@ typedef struct
 
 }stsd_esds_SampleEntry;
 
+// decoding time-to-sample
+/*
+Generally, DTS & PTS was taken by stts box. 
+but if dts & pts was different(in case of using B frame), DTS taken by stts box, PTS taken by ctts box
+DT(n+1) = DT(n) + STTS(n)
+For example
+----------------------------
+Sample Count | Sample-Delta
+----------------------------
+      4      |       3
+      2      |       1
+      3      |       2
+Sample: 1~4 => Sample-Delta: 3
+Sample: 5~6 => Sample-Delta: 1
+Sample: 7~9 => Sample-Delta: 2
+*/
+typedef struct
+{
+    unsigned int entry_count;
+    unsigned int* sample_count;
+    unsigned int* sample_delta;
+}sttsBox;
+
+
 // sample table box, container for the time/space map
 /*
 Mdat is the media data atom which contain video & audio frames. It is separated into tracks
@@ -215,6 +239,7 @@ sample?
 */
 typedef struct
 {
+    sttsBox sttsAtom;
     stsd_avc1_SampleEntry avc1SampleEntry;
     stsd_avcc_SampleEntry avccSampleEntry;
     stsd_esds_SampleEntry esdsSampleEntry;
@@ -772,16 +797,16 @@ int main()
                                                                         if(attype == _AVCC_)
                                                                         {
                                                                             printf("                            =====[avcc box]=====\n");
-                                                                            fseek(fp, avc1InnerSize, SEEK_CUR);
+                                                                            fseek(fp, avc1InnerSize - 8, SEEK_CUR);
                                                                         }
                                                                         else
                                                                         {
-                                                                            fseek(fp, avc1InnerSize, SEEK_CUR);
+                                                                            fseek(fp, avc1InnerSize - 8, SEEK_CUR);
                                                                         }
                                                                         break;
                                                                     
                                                                     default:
-                                                                        fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        fseek(fp, sampleEntryBoxSize - 8, SEEK_CUR);
                                                                         break;
                                                                     }
                                                                 }
@@ -792,7 +817,30 @@ int main()
 
                                                             case _STTS_:
                                                                 printf("                    =====[stts box]=====\n");
-                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                fseek(fp, 4, SEEK_CUR);     // Skip the version, flags information
+                                                                fgets(tempBuf32, 4 + 1, fp);    // Get the Entry Count
+                                                                unsigned int entry_count =  (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                unsigned int* sampleCountArray = malloc(sizeof(unsigned int) * entry_count);
+                                                                unsigned int* sampleDeltaArray = malloc(sizeof(unsigned int) * entry_count);
+
+                                                                unsigned int i = 0;
+                                                                for(i; i < entry_count; i++)
+                                                                {
+                                                                    fgets(tempBuf32, 4 + 1, fp);    //Get sample count info.
+                                                                    unsigned int sampleCountInfo = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                    sampleCountArray[i] = sampleCountInfo;
+
+                                                                    fgets(tempBuf32, 4 + 1, fp);    //Get sample duration info.
+                                                                    unsigned int sampleDeltaInfo = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                    sampleDeltaArray[i] = sampleDeltaInfo;
+                                                                }
+                                                                
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.sttsAtom.sample_count = sampleDeltaArray;
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.sttsAtom.sample_delta = sampleDeltaArray;
+
+                                                                printf("                    %x\n", moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.sttsAtom.sample_delta[2]);
+
+                                                                // fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
                                                                 break;
 
                                                             case _CTTS_:
