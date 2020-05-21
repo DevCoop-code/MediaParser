@@ -229,6 +229,14 @@ typedef struct
     unsigned int* entry_size;       // Each samples size
 }stszBox, stz2Box;
 
+typedef struct
+{
+    unsigned int entry_count;
+    char* stscTable;
+    unsigned int* first_chunk;
+    unsigned int* samples_per_chunk;
+    unsigned int* sample_description_index;
+}stscBox;
 
 // sample table box, container for the time/space map
 /*
@@ -251,6 +259,7 @@ typedef struct
     sttsBox sttsAtom;
     stszBox stszAtom;
     stz2Box stz2Atom;
+    stscBox stscAtom;
     stsd_avc1_SampleEntry avc1SampleEntry;
     stsd_avcc_SampleEntry avccSampleEntry;
     stsd_esds_SampleEntry esdsSampleEntry;
@@ -859,7 +868,23 @@ int main()
 
                                                             case _STSC_:
                                                                 printf("                    =====[stsc box]=====\n");
-                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                // fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                fseek(fp, 4, SEEK_CUR); // Skip the version and flags
+                                                                
+                                                                fgets(tempBuf32, 4 + 1, fp);    // Get the entry_count
+                                                                unsigned int stsc_entryCount = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.stscAtom.entry_count = stsc_entryCount;
+                                                                printf("                    stsc entry count: %x\n", stsc_entryCount);
+
+                                                                unsigned int* firstChunkArray = (unsigned int*)malloc(sizeof(unsigned int) * stsc_entryCount);
+                                                                unsigned int* samplePerChunkArray = (unsigned int*)malloc(sizeof(unsigned int) * stsc_entryCount);
+                                                                unsigned int* sampleDescriptIndexArray = (unsigned int*)malloc(sizeof(unsigned int) * stsc_entryCount);
+                                                                
+                                                                char* stscTable = (char*)malloc(sizeof(char) * (stblInnerBoxSize - 8 - 4 - 4));
+                                                                fread(stscTable, sizeof(char), stblInnerBoxSize - 8 - 4 - 4, fp);
+
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.stscAtom.stscTable = stscTable;
+
                                                                 break;
 
                                                             case _STZ2_:
