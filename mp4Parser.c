@@ -718,7 +718,7 @@ int main()
                                                                     switch (attype)
                                                                     {
                                                                     case _MP4V_:
-                                                                        fseek(fp, sampleEntryBoxSize, SEEK_CUR);
+                                                                        fseek(fp, sampleEntryBoxSize - 8, SEEK_CUR);
                                                                         
                                                                         break;
 
