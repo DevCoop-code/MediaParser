@@ -38,6 +38,7 @@
 #define						_CTTS_	0x63747473
 #define						_STSC_	0x73747363
 #define						_STSZ_	0x7374737A
+#define						_STZ2_	0x73747A32
 #define						_STCO_	0x7374636F
 #define						_CO64_	0x636F3634
 #define						_STSS_	0x73747373
@@ -220,6 +221,14 @@ typedef struct
     unsigned int* sample_delta;
 }sttsBox;
 
+// Sample Sizes
+typedef struct
+{
+    unsigned int sample_size;       // Specifying the default sample size(if every samples size is different, these value is 0)
+    unsigned int sample_count;      // The number of sample in a track
+    unsigned int* entry_size;       // Each samples size
+}stszBox, stz2Box;
+
 
 // sample table box, container for the time/space map
 /*
@@ -240,6 +249,8 @@ sample?
 typedef struct
 {
     sttsBox sttsAtom;
+    stszBox stszAtom;
+    stz2Box stz2Atom;
     stsd_avc1_SampleEntry avc1SampleEntry;
     stsd_avcc_SampleEntry avccSampleEntry;
     stsd_esds_SampleEntry esdsSampleEntry;
@@ -851,9 +862,31 @@ int main()
                                                                 fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
                                                                 break;
 
+                                                            case _STZ2_:
                                                             case _STSZ_:
                                                                 printf("                    =====[stsz box]=====\n");
-                                                                fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
+                                                                fseek(fp, 4, SEEK_CUR);     // Skip the version and flags
+                                                                
+                                                                fgets(tempBuf32, 4 + 1, fp);    // Get the sample size
+                                                                unsigned int sampleSize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.stszAtom.sample_size = sampleSize;
+
+                                                                fgets(tempBuf32, 4 + 1, fp);    // Get the sample count
+                                                                unsigned int sampleCount = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.stszAtom.sample_count = sampleCountArray;
+                                                                printf("                    stsz sampleSize: %x\n", sampleSize);
+                                                                printf("                    stsz sampleCount: %x\n", sampleCount);
+                                                                
+                                                                unsigned int j = 0;
+                                                                unsigned int* entrySizeArray = (unsigned int*)malloc(sizeof(unsigned int) * sampleCount);
+                                                                for(j; j < sampleCount; j++)
+                                                                {
+                                                                    fgets(tempBuf32, 4 + 1, fp);
+                                                                    unsigned int entrySize = (tempBuf32[0]<<24) | (tempBuf32[1]<<16) | (tempBuf32[2]<<8) | (tempBuf32[3]);
+                                                                    entrySizeArray[j] = entrySize;
+                                                                }
+                                                                moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.stszAtom.entry_size = entrySizeArray;
+                                                                // fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
                                                                 break;
 
                                                             case _STCO_:
