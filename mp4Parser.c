@@ -838,8 +838,6 @@ int main()
                                                                 moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.sttsAtom.sample_count = sampleDeltaArray;
                                                                 moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.sttsAtom.sample_delta = sampleDeltaArray;
 
-                                                                printf("                    %x\n", moovAtom.trakAtom[trackNum].mdiaAtom.minfAtom.stblAtom.sttsAtom.sample_delta[2]);
-
                                                                 // fseek(fp, stblInnerBoxSize - 8, SEEK_CUR);
                                                                 break;
 
