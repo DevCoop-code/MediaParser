@@ -975,6 +975,12 @@ int main()
                         break;
                     }
                     fseek(fp, nextBoxLoc + moovInnerLoc, SEEK_SET);     //moovInnerLoc = Size of 1st moovChildren (mvhd, trak, mvex, ipmc) 
+                    
+                    if (moovInnerLoc >= atomSize)
+                    {
+                        break;
+                    }
+                    printf("atomSize: %d, currentLoc: %d \n", atomSize, moovInnerLoc);
                 }
 
                 printf("====================\n");
@@ -987,8 +993,12 @@ int main()
 
         // Move to Next box
         nextBoxLoc += atomSize;
-        fseek(fp, nextBoxLoc, SEEK_SET);
-        // printf("nextBoxLoc(%d)\n", nextBoxLoc);
+        printf("nextBoxLoc(%d)\n", nextBoxLoc);
+
+        if (mp4Size > nextBoxLoc)
+        {
+            fseek(fp, nextBoxLoc, SEEK_SET);
+        }
     }
     
     // Close the file
