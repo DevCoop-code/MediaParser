@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "mp4/mp4Parser.h"
+#import "mpegts/mpegtsParser.h"
 
 @interface mediaParser : NSObject
 - (NSString*)sayHello;

@@ -21,6 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		78783EEF250D98B2002C574E /* mp4Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 78783EED250D98B2002C574E /* mp4Parser.cpp */; };
+		78783EF2250D9957002C574E /* mpegtsParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 78783EF0250D9957002C574E /* mpegtsParser.cpp */; };
 		78B161892473FFF500530DD2 /* mediaParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 78B161882473FFF500530DD2 /* mediaParser.m */; };
 		78B1618A2473FFF500530DD2 /* mediaParser.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 78B161872473FFF500530DD2 /* mediaParser.h */; };
 /* End PBXBuildFile section */
@@ -39,6 +41,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		78783EED250D98B2002C574E /* mp4Parser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mp4Parser.cpp; sourceTree = "<group>"; };
+		78783EEE250D98B2002C574E /* mp4Parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mp4Parser.h; sourceTree = "<group>"; };
+		78783EF0250D9957002C574E /* mpegtsParser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mpegtsParser.cpp; sourceTree = "<group>"; };
+		78783EF1250D9957002C574E /* mpegtsParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mpegtsParser.h; sourceTree = "<group>"; };
 		78B161842473FFF500530DD2 /* libmediaParser.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libmediaParser.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B161872473FFF500530DD2 /* mediaParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mediaParser.h; sourceTree = "<group>"; };
 		78B161882473FFF500530DD2 /* mediaParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mediaParser.m; sourceTree = "<group>"; };
@@ -55,6 +61,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		78783EEB250D985F002C574E /* mpegts */ = {
+			isa = PBXGroup;
+			children = (
+				78783EF0250D9957002C574E /* mpegtsParser.cpp */,
+				78783EF1250D9957002C574E /* mpegtsParser.h */,
+			);
+			path = mpegts;
+			sourceTree = "<group>";
+		};
+		78783EEC250D9869002C574E /* mp4 */ = {
+			isa = PBXGroup;
+			children = (
+				78783EED250D98B2002C574E /* mp4Parser.cpp */,
+				78783EEE250D98B2002C574E /* mp4Parser.h */,
+			);
+			path = mp4;
+			sourceTree = "<group>";
+		};
 		78B1617B2473FFF500530DD2 = {
 			isa = PBXGroup;
 			children = (
@@ -74,6 +98,8 @@
 		78B161862473FFF500530DD2 /* mediaParser */ = {
 			isa = PBXGroup;
 			children = (
+				78783EEC250D9869002C574E /* mp4 */,
+				78783EEB250D985F002C574E /* mpegts */,
 				78B161872473FFF500530DD2 /* mediaParser.h */,
 				78B161882473FFF500530DD2 /* mediaParser.m */,
 			);
@@ -161,7 +187,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78783EEF250D98B2002C574E /* mp4Parser.cpp in Sources */,
 				78B161892473FFF500530DD2 /* mediaParser.m in Sources */,
+				78783EF2250D9957002C574E /* mpegtsParser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
